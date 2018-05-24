@@ -57,10 +57,10 @@ void setup() {                  //everything in here runs once, every time the p
 
 void loop() { //loops infinitely until power supply is removed
   lights();   //constantly calls lights() in order to give every onlooker's eyes undivided satisfaction
-  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(1000);                       // wait for a second
-  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-  delay(1000);                       // wait for a second
+ // digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+ // delay(1000);                       // wait for a second
+ // digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
+ // delay(1000);                       // wait for a second
 }
 
 void receiveEvent() { //called when the Arduino receives data from the RoboRio in order to show the correct pattern
