@@ -52,10 +52,15 @@ void setup() {                  //everything in here runs once, every time the p
   strip.begin();                //initializes LED strip
   strip.setBrightness(255);     //sets brightness (0 to 255)
   strip.show();                 //sets all pixels to "off" state
+  pinMode(LED_BUILTIN, OUTPUT); //initialize digital pin LED_BUILTIN as an output, to show us the code is running
 }
 
 void loop() { //loops infinitely until power supply is removed
   lights();   //constantly calls lights() in order to give every onlooker's eyes undivided satisfaction
+  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(1000);                       // wait for a second
+  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
+  delay(1000);                       // wait for a second
 }
 
 void receiveEvent() { //called when the Arduino receives data from the RoboRio in order to show the correct pattern
