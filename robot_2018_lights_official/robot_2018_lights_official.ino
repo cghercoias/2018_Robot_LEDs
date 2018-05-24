@@ -1,7 +1,7 @@
 /*
    Robot 2018 Lights
    Shows various patterns on LED strips in different situations
-   Andrew Sealing, Victor Ghercoias, Catalin Ghercoias, Garry Brader, Roland Rao
+   Andrew Sealing, Victor G., Catalin Ghercoias, Garry Brader, Roland R.
 */
 
 
