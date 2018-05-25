@@ -22,7 +22,7 @@
 #include <Wire.h>               //includes library for using I2C
 #include <Adafruit_NeoPixel.h>  //includes library for using LED strip
 
-#define ledStripPin 6 //pin used for the long LED strip
+#define ledStripPin 6 //data pin used for the LED strip
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(20, ledStripPin, NEO_RGB + NEO_KHZ800);  //initializes LED strip object
 
