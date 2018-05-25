@@ -1,9 +1,8 @@
 /*
    Robot 2018 Lights
    Shows various patterns on LED strips in different situations
-   Andrew S., Victor G., Catalin Ghercoias, Garry Brader, Roland R.
+   Andrew S., Victor G., Catalin Ghercoias, Garry Brader.
 */
-
 
 /*
    Inputs from RoboRio:
@@ -17,19 +16,22 @@
    27 - climbing
    28 - drawing too much current from battery
    29 - rainbow
+   30 - robot startup
 */
 
 #include <Wire.h>               //includes library for using I2C
 #include <Adafruit_NeoPixel.h>  //includes library for using LED strip
 
-#define ledStripPin 6 //Data pin used for the long LED strip
+#define ledStripPin 6 //pin used for the long LED strip
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(20, ledStripPin, NEO_RGB + NEO_KHZ800);  //initializes LED strip object
 
 byte I2CData = 21;                    //number received from RoboRio
 byte prevI2CData = 21;                //previous value of I2CData
-byte pattern = 21;                    //number that controls what light pattern will be displayed
-byte prevPattern = 21;                //previous value of pattern to set pattern back to after case 25 (five white flashes)
+const byte pixelSpacing = 5;          //spacing between on pixels for chasing patterns
+boolean on = false;                   //has the startup pattern run yet?
+boolean elevator = false;             //has the elevator been moving?
+boolean flashed = false;              //have the lights flashed after picking up a cube?
 uint32_t off = strip.Color(0, 0, 0);  //constant RGB values for different colors (max is 255) (for some reason the order is "BRG" ???)
 uint32_t red = strip.Color(0, 255, 0);
 uint32_t orange = strip.Color(0, 255, 63);
@@ -38,54 +40,39 @@ uint32_t green = strip.Color(0, 0, 255);
 uint32_t blue = strip.Color(255, 0, 0);
 uint32_t purple = strip.Color(255, 255, 0);
 uint32_t white = strip.Color(255, 255, 255);
-                                      //__variables for light patterns__
-                                      //_elevator_
-byte elevatorNum;                     //number of pixels to light up for elevator measurement
-                                      //_red or blue alliance_
-const byte pixelSpacing = 5;          //spacing between on pixels
-                                      //_cube acquired_
-boolean flashed = false;              //used to make it run only once
 
 void setup() {                  //everything in here runs once, every time the program is started
   Wire.begin(1);                //initializes I2C communication on port 1
   Wire.onReceive(receiveEvent); //sets a method to call when the Arduino receives data
   strip.begin();                //initializes LED strip
-  strip.setBrightness(255);     //sets brightness (0 to 255)
+  strip.setBrightness(255);     //sets brightness (out of 255)
   strip.show();                 //sets all pixels to "off" state
-  pinMode(LED_BUILTIN, OUTPUT); //initialize digital pin LED_BUILTIN as an output, to show us the code is running
 }
 
 void loop() { //loops infinitely until power supply is removed
   lights();   //constantly calls lights() in order to give every onlooker's eyes undivided satisfaction
- // digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
- // delay(1000);                       // wait for a second
- // digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
- // delay(1000);                       // wait for a second
 }
 
 void receiveEvent() { //called when the Arduino receives data from the RoboRio in order to show the correct pattern
-  prevI2CData = I2CData;
   I2CData = Wire.read();
-  if (pattern != 26)
-    prevPattern = pattern;
   if (I2CData == 1)
     I2CData = prevI2CData;
-  if (I2CData <= 20) {
-    elevatorNum = I2CData;
-    pattern = 255;
+  else if (I2CData != 26)
+    prevI2CData = I2CData;
+  if (elevator && I2CData > 20) {
+    delay(1000);
+    elevator = false;
   }
-  if (I2CData > 20)
-    pattern = I2CData;
 }
 
 void lights() {               //displays different patterns on the LED strip depending on the value of pattern
   if (flashed) {
-    if (pattern == 26)        //if pattern is "five white flashes" but it already ran...
-      pattern = prevPattern;  //set pattern to what it was before
+    if (I2CData == 26)        //if pattern is "five white flashes" but it already ran...
+      I2CData = prevI2CData;  //set pattern to what it was before
     else                      //otherwise...
       flashed = false;        //set it to false for next time
   }
-  switch (pattern) {          //selects the correct pattern
+  switch (I2CData) {          //selects the correct pattern
     case 21:                  //off - all off
       for (byte i = 0; i < strip.numPixels(); i ++)
         strip.setPixelColor(i, off);
@@ -176,9 +163,27 @@ void lights() {               //displays different patterns on the LED strip dep
         delay(20);
       }
       break;
+    case 30:                  //robot startup - green slowly fading in
+      if (!on) {
+        for (int i = 0; i < 256; i ++) {
+          for (byte j = 0; j < strip.numPixels(); j ++)
+            strip.setPixelColor(j, strip.Color(0, 0, i));
+          strip.show();
+          delay(10);
+        }
+        for (int i = 255; i >= 0; i --) {
+          for (byte j = 0; j < strip.numPixels(); j ++)
+            strip.setPixelColor(j, strip.Color(0, 0, i));
+          strip.show();
+          delay(10);
+        }
+        on = true;
+      }
+      break;
     default:                   //elevator - shows the height of the elevator
+      elevator = true;
       for (byte i = 0; i < strip.numPixels(); i ++) {
-        if (i < elevatorNum)
+        if (i < I2CData)
           strip.setPixelColor(i, purple);
         else
           strip.setPixelColor(i, off);
